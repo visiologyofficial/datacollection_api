@@ -1,4 +1,4 @@
-from requests import Session, HTTPError
+from requests import Session
 from calendar import monthrange
 from datetime import timedelta
 
@@ -44,6 +44,8 @@ class DataCollection:
         return access_token
 
     def get_dimension_attributes(self, dim_id, filters=None):
+        if filters is not None:
+            filters = filters()
         url = self.host + '/datacollection/api/dimensions/%s/attributes' % dim_id
         help(self.api.request)
         req = self.api.request('GET', url, headers=self.headers, json=filters)
@@ -51,6 +53,8 @@ class DataCollection:
         return req.json()
 
     def get_dimension_elements(self, dim_id, filters=None):
+        if filters is not None:
+            filters = filters()
         url = self.host + '/datacollection/api/dimensions/%s/elements' % dim_id
         req = self.api.request('GET', url, headers=self.headers, json=filters)
         req.raise_for_status()
@@ -59,8 +63,8 @@ class DataCollection:
     def put_dimension_elements(self, dim_id, data=None, filters=None):
         if data is None:
             data = {}
-        if filters is None:
-            filters = {}
+        if filters is not None:
+            filters = filters()
         req_data = {'filter': filters, 'fields': data}
         url = self.host + '/datacollection/api/dimensions/%s/elements' % dim_id
         req = self.api.request('PUT', url, headers=self.headers, json=req_data)
@@ -76,14 +80,16 @@ class DataCollection:
         return req.json()
 
     def delete_dimension_elements(self, dim_id, filters=None):
-        if filters is None:
-            filters = {}
+        if filters is not None:
+            filters = filters()
         url = self.host + '/datacollection/api/dimensions/%s/elements' % dim_id
         req = self.api.request('DELETE', url, headers=self.headers, json=filters)
         req.raise_for_status()
         return req.json()
 
     def post_dimension_elements_search(self, dim_id, filters=None):
+        if filters is not None:
+            filters = filters()
         url = self.host + '/datacollection/api/dimensions/%s/elements/search' % dim_id
         req = self.api.request('POST', url, headers=self.headers, json=filters)
         req.raise_for_status()
@@ -122,11 +128,12 @@ class DataCollection:
         return req.json()
 
     def get_measuregroup_elements(self, measure_id, filters=None):
+        if filters is not None:
+            filters = filters()
         url = self.host + '/datacollection/api/measuregroups/%s/elements' % measure_id
         req = self.api.request('GET', url, headers=self.headers, json=filters)
         req.raise_for_status()
         return req.json()
-
 
     def post_measuregroup_elements(self, measure_id, data=None):
         if data is None:
@@ -137,8 +144,8 @@ class DataCollection:
         return req.json()
 
     def delete_measuregroup_elements(self, measure_id, filters=None):
-        if filters is None:
-            filters = {}
+        if filters is not None:
+            filters = filters()
         url = self.host + '/datacollection/api/measuregroups/%s/elements' % measure_id
         req = self.api.request('DELETE', url, headers=self.headers, json=filters)
         req.raise_for_status()
@@ -158,8 +165,8 @@ class DataCollection:
 
 # SPECIAL FUNCTIONS (NO API)
 
-    def transfer_data(self, group_id, cur_date, dim,
-                      granularity='month', from_data=None, to_data=None):
+    def transfer_data(self, group_id, cur_date, dim, granularity='month',
+                      from_data=None, to_data=None):
 
         if (from_data is None or to_data is None) and from_data is not to_data:
             raise AttributeError('Необходимо задать агрументы from_data и to_data '
@@ -281,7 +288,12 @@ class DataCollection:
     def get_measures_from_folder(self, dim, *folders):
         name_folders = list(folders)
         dimensions = self.get_dimensions()['dimensions']
-        dim_id = list(filter(lambda x: x['id'] == dim or x['name'] == dim, dimensions))[-1]['id']
+        dims_list = list(filter(lambda x: x['id'] == dim or x['name'] == dim, dimensions))
+        if dims_list:
+            dim_id = dims_list[-1]['id']
+        else:
+            raise AttributeError('ТАМ ТАКОГО ДИМА')
+            # Заполнить
 
         def subfolder(folder):
             for e in range(len(name_folders)):
@@ -334,7 +346,8 @@ class DataCollection:
             else:
                 return result
 
-    def get_measure_data_by_date(self, group_id, cur_date, dim, granularity='month', from_data=None):
+    def get_measure_data_by_date(self, group_id, cur_date, dim,
+                                 granularity='month', from_data=None):
         if from_data is None:
             raise AttributeError("Необходимо задать агрумент from_data")
 
@@ -406,7 +419,8 @@ class DataCollection:
                 return element
 
     @staticmethod
-    def find_dimension_element_by_attribute(dimension_elements, attribute_unique_name, attribute_value):
+    def find_dimension_element_by_attribute(dimension_elements, attribute_unique_name,
+                                            attribute_value):
         if type(dimension_elements) is not dict or type(attribute_unique_name) is not str: # or type(attribute_value) is not int:
             raise AttributeError("Пожалуйста, проверьте корректность введённых вами данных")
         def predicate(element):
@@ -419,6 +433,7 @@ class DataCollection:
     def find_dimension_element_by_name(dimension_elements, element_name):
         if type(dimension_elements) is not dict or type(element_name) is not str:
             raise AttributeError("Пожалуйста, проверьте корректность введённых вами данных")
+
         def predicate(element):
             return bool(element["name"] == element_name)
 
@@ -428,6 +443,7 @@ class DataCollection:
     def find_dimension_element_by_id(dimension_elements, element_id):
         if type(dimension_elements) is not dict or type(element_id) is not int:
             raise AttributeError("Пожалуйста, проверьте корректность введённых вами данных")
+
         def predicate(element):
             return bool(element["id"] == element_id)
 
