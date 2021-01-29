@@ -86,18 +86,31 @@ def test_transfer_data(vdatacollection):
         if recent_period['elements'][i]['value'] == current_period['elements'][i]['value']:
             count += 1
     assert count == len(recent_period['elements'])
+    try:
+        error = vdatacollection.transfer_data(pytest.MEASUREGROUPNAME, ddate(2020, 4, 1), pytest.DIMMEASUREGROUP, granularity = 'quarter',
+                                  from_data=pytest.PPASTPERSTR)
+    except Exception:
+        assert 1==1
 
 
 def test_get_measuregroup_elements(vdatacollection):
     data = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME)
     assert type(data) is dict
     assert data
+    try:
+        error = vdatacollection.get_measuregroup_elements('fieghuheig')
+    except Exception:
+        assert 1==1
 
 
 def test_post_dimension_by_uniquename(vdatacollection):
     data = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME)
     assert type(data) is dict
     assert data
+    try:
+        error = vdatacollection.get_measuregroup_elements(542578)
+    except Exception:
+        assert 1==1
 
 
 def test_get_measures_from_folder(vdatacollection):
@@ -114,6 +127,10 @@ def test_get_measures_from_folder(vdatacollection):
                                          {'id': 8, 'name': 'Всего внеоборотных активов'}]}
     assert result_1 == test_data_1
     assert result_2 == test_data_2
+    try:
+        error = vdatacollection.get_measures_from_folder('geuohgoeg')
+    except Exception:
+        assert 1==1
 
 def test_get_measure_data_by_date(vdatacollection):
     data_for_test_1 = vdatacollection.get_measure_data_by_date(pytest.MEASUREGROUPNAME, ddate(2020, 7, 1), dim=pytest.DIMMEASUREGROUPSTR, granularity = 'quarter', from_data = 2)
@@ -123,29 +140,55 @@ def test_get_measure_data_by_date(vdatacollection):
     assert data_for_test_1 == data_for_test_2
     assert data_for_test_3 == data_for_test_4
     assert data_for_test_1 != data_for_test_3
+    try:
+        error = vdatacollection.get_measure_data_by_date(pytest.MEASUREGROUPNAME, ddate(2020, 7, 1), dim=pytest.DIMMEASUREGROUPSTR, granularity = 'quarter')
+    except AttributeError:
+        assert 1 != 2
 
 
 def test_find_attribute_by_unique_name(vdatacollection):
     prediction = {'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': None}
     answer = vdatacollection.find_attribute_by_unique_name(vdatacollection.get_dimension_elements(pytest.DIMUTILS)['elements'][0], pytest.DIMUTILS_ATTR)
     assert prediction == answer
+    try:
+        error = vdatacollection.find_attribute_by_unique_name(vdatacollection.get_dimension_elements(pytest.DIMUTILS)['elements'][0], 1673)
+    except AttributeError:
+        assert 1 != 2
+
 
 def test_find_dimension_element_by_attribute(vdatacollection):
     prediction = {'id': 1, 'name': 'Количество', 'path': [], 'attributes': [{'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': None}, {'linkedElementName': None, 'attributeId': 'attr_Edinitsa_izmereniya', 'value': None}, {'attributeId': 'attr_Kod_pokazatelya', 'value': None}, {'attributeId': 'attr_Tochnost_znakov_posle_', 'value': 0}]}
     answer = vdatacollection.find_dimension_element_by_attribute(vdatacollection.get_dimension_elements(pytest.DIMUTILS), "attr_Edinitsa_izmereniya", None)
     assert prediction == answer
+    try:
+        error = vdatacollection.find_dimension_element_by_attribute(58362573725, 35763759, 'qwerty')
+    except AttributeError:
+        assert 1 != 2
 
 def test_find_dimension_element_by_name(vdatacollection):
     prediction = {'id': 2, 'name': 'Цена', 'path': [], 'attributes': [{'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': None}, {'linkedElementName': None, 'attributeId': 'attr_Edinitsa_izmereniya', 'value': None}, {'attributeId': 'attr_Kod_pokazatelya', 'value': None}, {'attributeId': 'attr_Tochnost_znakov_posle_', 'value': 0}]}
     answer = vdatacollection.find_dimension_element_by_name(vdatacollection.get_dimension_elements(pytest.DIMUTILS), 'Цена')
     assert prediction == answer
+    try:
+        error = vdatacollection.find_dimension_element_by_name(38756375, 'Цена')
+    except AttributeError:
+        assert 1 != 2
+
 
 def test_find_dimension_element_by_id(vdatacollection):
     prediction = {'id': 2, 'name': 'Цена', 'path': [], 'attributes': [{'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': None}, {'linkedElementName': None, 'attributeId': 'attr_Edinitsa_izmereniya', 'value': None}, {'attributeId': 'attr_Kod_pokazatelya', 'value': None}, {'attributeId': 'attr_Tochnost_znakov_posle_', 'value': 0}]}
     answer = vdatacollection.find_dimension_element_by_id(vdatacollection.get_dimension_elements(pytest.DIMUTILS), 2)
     assert prediction == answer
+    try:
+        error = vdatacollection.find_dimension_element_by_id(vdatacollection.get_dimension_elements(pytest.DIMUTILS), 'qwerty')
+    except AttributeError:
+        assert 1 != 2
 
 def test_prepare_dimension_element_to_insert(vdatacollection):
     prediction = {'id': 1, 'name': 'Количество', 'path': [], 'attributes': [{'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': 4}, {'linkedElementName': None, 'attributeId': 'attr_Edinitsa_izmereniya', 'value': None}, {'attributeId': 'attr_Kod_pokazatelya', 'value': 5}, {'attributeId': 'attr_Tochnost_znakov_posle_', 'value': 0}]}
     answer = vdatacollection.prepare_dimension_element_to_insert(vdatacollection.get_dimension_elements(pytest.DIMUTILS)['elements'][0], {"attr_Funktsiya_agregatsii": 4, "attr_Kod_pokazatelya": 5})
     assert prediction == answer
+    try:
+        error = vdatacollection.prepare_dimension_element_to_insert(1452684, [1, 2, 3, 4])
+    except AttributeError:
+        assert 1 != 2

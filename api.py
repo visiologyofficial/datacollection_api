@@ -1,4 +1,4 @@
-from requests import Session
+from requests import Session, HTTPError
 from calendar import monthrange
 from datetime import timedelta
 
@@ -47,11 +47,13 @@ class DataCollection:
         url = self.host + '/datacollection/api/dimensions/%s/attributes' % dim_id
         help(self.api.request)
         req = self.api.request('GET', url, headers=self.headers, json=filters)
+        req.raise_for_status()
         return req.json()
 
     def get_dimension_elements(self, dim_id, filters=None):
         url = self.host + '/datacollection/api/dimensions/%s/elements' % dim_id
         req = self.api.request('GET', url, headers=self.headers, json=filters)
+        req.raise_for_status()
         return req.json()
 
     def put_dimension_elements(self, dim_id, data=None, filters=None):
@@ -62,6 +64,7 @@ class DataCollection:
         req_data = {'filter': filters, 'fields': data}
         url = self.host + '/datacollection/api/dimensions/%s/elements' % dim_id
         req = self.api.request('PUT', url, headers=self.headers, json=req_data)
+        req.raise_for_status()
         return req.json()
 
     def post_dimension_elements(self, dim_id, data=None):
@@ -69,6 +72,7 @@ class DataCollection:
             data = {}
         url = self.host + '/datacollection/api/dimensions/%s/elements' % dim_id
         req = self.api.request('POST', url, headers=self.headers, json=data)
+        req.raise_for_status()
         return req.json()
 
     def delete_dimension_elements(self, dim_id, filters=None):
@@ -76,50 +80,60 @@ class DataCollection:
             filters = {}
         url = self.host + '/datacollection/api/dimensions/%s/elements' % dim_id
         req = self.api.request('DELETE', url, headers=self.headers, json=filters)
+        req.raise_for_status()
         return req.json()
 
     def post_dimension_elements_search(self, dim_id, filters=None):
         url = self.host + '/datacollection/api/dimensions/%s/elements/search' % dim_id
         req = self.api.request('POST', url, headers=self.headers, json=filters)
+        req.raise_for_status()
         return req.json()
 
     def get_dimension_folders(self, dim_id):
         url = self.host + '/datacollection/api/dimensions/%s/folders' % dim_id
         req = self.api.request('GET', url, headers=self.headers)
+        req.raise_for_status()
         return req.json()
 
     def get_dimension_folder_children(self, dim_id, folder_id):
         url = self.host + '/datacollection/api/dimensions/%s/folders/%s/children' % (dim_id,
                                                                                      folder_id)
         req = self.api.request('GET', url, headers=self.headers)
+        req.raise_for_status()
         return req.json()
 
     def get_dimension_level_folders(self, dim_id, level_id):
         url = self.host + '/datacollection/api/dimensions/%s/levels/%s/folders' % (dim_id,
                                                                                    level_id)
         req = self.api.request('GET', url, headers=self.headers)
+        req.raise_for_status()
         return req.json()
 
     def get_dimension_levels(self, dim_id):
         url = self.host + '/datacollection/api/dimensions/%s/levels' % dim_id
         req = self.api.request('GET', url, headers=self.headers)
+        req.raise_for_status()
         return req.json()
 
     def get_dimensions(self):
         url = self.host + '/datacollection/api/dimensions'
         req = self.api.request('GET', url, headers=self.headers)
+        req.raise_for_status()
         return req.json()
 
     def get_measuregroup_elements(self, measure_id, filters=None):
         url = self.host + '/datacollection/api/measuregroups/%s/elements' % measure_id
         req = self.api.request('GET', url, headers=self.headers, json=filters)
+        req.raise_for_status()
         return req.json()
+
 
     def post_measuregroup_elements(self, measure_id, data=None):
         if data is None:
             data = {}
         url = self.host + '/datacollection/api/measuregroups/%s/elements' % measure_id
         req = self.api.request('POST', url, headers=self.headers, json=data)
+        req.raise_for_status()
         return req.json()
 
     def delete_measuregroup_elements(self, measure_id, filters=None):
@@ -127,16 +141,19 @@ class DataCollection:
             filters = {}
         url = self.host + '/datacollection/api/measuregroups/%s/elements' % measure_id
         req = self.api.request('DELETE', url, headers=self.headers, json=filters)
+        req.raise_for_status()
         return req.json()
 
     def get_measuregroup(self, measure_id):
         url = self.host + '/datacollection/api/measuregroups/%s' % measure_id
         req = self.api.request('GET', url, headers=self.headers)
+        req.raise_for_status()
         return req.json()
 
     def get_measuregroups(self):
         url = self.host + '/datacollection/api/measuregroups'
         req = self.api.request('GET', url, headers=self.headers)
+        req.raise_for_status()
         return req.json()
 
 # SPECIAL FUNCTIONS (NO API)
@@ -376,6 +393,8 @@ class DataCollection:
 
     @staticmethod
     def find_attribute_by_unique_name(dimension_element, attribute_unique_name):
+        if type(dimension_element) is not dict or type(attribute_unique_name) is not str:
+            raise AttributeError("Пожалуйста, проверьте корректность введённых вами данных")
         for attribute in dimension_element["attributes"]:
             if attribute["attributeId"] == attribute_unique_name:
                 return attribute
@@ -388,6 +407,8 @@ class DataCollection:
 
     @staticmethod
     def find_dimension_element_by_attribute(dimension_elements, attribute_unique_name, attribute_value):
+        if type(dimension_elements) is not dict or type(attribute_unique_name) is not str: # or type(attribute_value) is not int:
+            raise AttributeError("Пожалуйста, проверьте корректность введённых вами данных")
         def predicate(element):
             attribute = DataCollection.find_attribute_by_unique_name(element, attribute_unique_name)
             return all((attribute is not None, attribute["value"] == attribute_value))
@@ -396,6 +417,8 @@ class DataCollection:
 
     @staticmethod
     def find_dimension_element_by_name(dimension_elements, element_name):
+        if type(dimension_elements) is not dict or type(element_name) is not str:
+            raise AttributeError("Пожалуйста, проверьте корректность введённых вами данных")
         def predicate(element):
             return bool(element["name"] == element_name)
 
@@ -403,6 +426,8 @@ class DataCollection:
 
     @staticmethod
     def find_dimension_element_by_id(dimension_elements, element_id):
+        if type(dimension_elements) is not dict or type(element_id) is not int:
+            raise AttributeError("Пожалуйста, проверьте корректность введённых вами данных")
         def predicate(element):
             return bool(element["id"] == element_id)
 
@@ -410,6 +435,8 @@ class DataCollection:
 
     @staticmethod
     def prepare_dimension_element_to_insert(dimension_element, attribute_map):
+        if type(dimension_element) is not dict or type(attribute_map) is not dict:
+            raise AttributeError("Пожалуйста, проверьте корректность введённых вами данных")
         for attribute in dimension_element["attributes"]:
             attribute_id = attribute["attributeId"]
             if attribute_id in attribute_map:
