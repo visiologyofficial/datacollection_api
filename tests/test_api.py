@@ -1,10 +1,21 @@
 import pytest
 from requests import HTTPError
 from datetime import date as ddate
+import filters as f
 
 
 def test_transfer_data(vdatacollection):
-    current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME,
+    compfilter = f.ComplexFilter()
+    compfilter += [f.DictFilter({'value': pytest.PCURPER,
+                                 'type': 'MeasureId',
+                                 'name': pytest.DIMMEASUREGROUP,
+                                 'condition': 'equals'}),
+                   f.DictFilter({'value': pytest.PCURPER,
+                                 'type': 'MeasureId',
+                                 'name': pytest.DIMMEASUREGROUP,
+                                 'condition': 'equals'})]
+    current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, compfilter)
+    '''
                                                                 {'operation': 'and', 'filters': [
                                                                 {'value': pytest.PCURPER,
                                                                  'type': 'MeasureId',
@@ -12,7 +23,7 @@ def test_transfer_data(vdatacollection):
                                                                  'condition': 'equals'},
                                                                 {'value': pytest.CURDATE,
                                                                  'type': 'calendar',
-                                                                 'condition': 'equals'}]})
+                                                                 'condition': 'equals'}]})'''
     with pytest.raises(AttributeError):
         vdatacollection.transfer_data(pytest.MEASUREGROUPNAME, ddate(2020, 4, 1),
                                       pytest.DIMMEASUREGROUP, granularity='quarter',
