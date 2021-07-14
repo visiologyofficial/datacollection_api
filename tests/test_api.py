@@ -1,43 +1,24 @@
 import pytest
 from requests import HTTPError
-from datetime import date as ddate
-import filters as f
+from filters import *
 
 
 def test_transfer_data(vdatacollection):
-    compfilter = f.ComplexFilter()
-    compfilter += [f.DictFilter({'value': pytest.PCURPER,
-                                 'type': 'MeasureId',
-                                 'name': pytest.DIMMEASUREGROUP,
-                                 'condition': 'equals'}),
-                   f.DictFilter({'value': pytest.PCURPER,
-                                 'type': 'MeasureId',
-                                 'name': pytest.DIMMEASUREGROUP,
-                                 'condition': 'equals'})]
-    current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, compfilter)
-    '''
-                                                                {'operation': 'and', 'filters': [
-                                                                {'value': pytest.PCURPER,
-                                                                 'type': 'MeasureId',
-                                                                 'name': pytest.DIMMEASUREGROUP,
-                                                                 'condition': 'equals'},
-                                                                {'value': pytest.CURDATE,
-                                                                 'type': 'calendar',
-                                                                 'condition': 'equals'}]})'''
+    comfil1 = ComplexFilter()
+    comfil1 += [MeasureIdFilter(pytest.PCURPER, pytest.DIMMEASUREGROUP),
+                CalendarFilter(pytest.CURDATE)]
+    current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, comfil1)
+
     with pytest.raises(AttributeError):
-        vdatacollection.transfer_data(pytest.MEASUREGROUPNAME, ddate(2020, 4, 1),
+        vdatacollection.transfer_data(pytest.MEASUREGROUPNAME, date(2020, 4, 1),
                                       pytest.DIMMEASUREGROUP, granularity='quarter',
                                       from_data=None, to_data=pytest.PCURPER)
     count = 0
-    new_current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME,
-                                                                       {'operation': 'and', 'filters': [
-                                                                        {'value': pytest.PCURPER,
-                                                                            'type': 'MeasureId',
-                                                                            'name': pytest.DIMMEASUREGROUP,
-                                                                            'condition': 'equals'},
-                                                                           {'value': pytest.CURDATE,
-                                                                            'type': 'calendar',
-                                                                            'condition': 'equals'}]})
+    comfil2 = ComplexFilter()
+    comfil2 += [MeasureIdFilter(pytest.PCURPER, pytest.DIMMEASUREGROUP),
+                CalendarFilter(pytest.CURDATE)]
+    new_current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, comfil2)
+
     new_current_period['elements'].sort(key=lambda x: x['dimensionElements'][1]['elementId'])
     current_period['elements'].sort(key=lambda x: x['dimensionElements'][1]['elementId'])
     for i in range(len(current_period['elements'])):
@@ -45,24 +26,19 @@ def test_transfer_data(vdatacollection):
             count += 1
     assert count == len(new_current_period['elements'])
 
-    recent_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, {'operation': 'and', 'filters': [
-        {'value': pytest.PPASTPER,
-         'type': 'MeasureId',
-         'name': pytest.DIMMEASUREGROUP,
-         'condition': 'equals'},
-        {'value': pytest.RECDATE,
-         'type': 'calendar',
-         'condition': 'equals'}]})
-    vdatacollection.transfer_data(pytest.MEASUREGROUPNAME, ddate(2020, 4, 1), pytest.DIMMEASUREGROUP, granularity = 'quarter',
+    comfil3 = ComplexFilter()
+    comfil3 += [MeasureIdFilter(pytest.PPASTPER, pytest.DIMMEASUREGROUP),
+                CalendarFilter(pytest.RECDATE)]
+
+    recent_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, comfil3)
+    vdatacollection.transfer_data(pytest.MEASUREGROUPNAME, date(2020, 4, 1),
+                                  pytest.DIMMEASUREGROUP, granularity='quarter',
                                   from_data=pytest.PPASTPER, to_data=pytest.PCURPER)
-    current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, {'operation': 'and', 'filters': [
-        {'value': pytest.PCURPER,
-         'type': 'MeasureId',
-         'name': pytest.DIMMEASUREGROUP,
-         'condition': 'equals'},
-        {'value': pytest.CURDATE,
-         'type': 'calendar',
-         'condition': 'equals'}]})
+
+    comfil4 = ComplexFilter()
+    comfil4 += [MeasureIdFilter(pytest.PCURPER, pytest.DIMMEASUREGROUP),
+                CalendarFilter(pytest.CURDATE)]
+    current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, comfil4)
     count = 0
     recent_period['elements'].sort(key=lambda x: x['dimensionElements'][1]['elementId'])
     current_period['elements'].sort(key=lambda x: x['dimensionElements'][1]['elementId'])
@@ -71,26 +47,18 @@ def test_transfer_data(vdatacollection):
             count += 1
     assert count == len(recent_period['elements'])
 
-    recent_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME,
-                                                                   {'operation': 'and', 'filters': [
-                                                                       {'value': pytest.PPASTPER,
-                                                                        'type': 'MeasureId',
-                                                                        'name': pytest.DIMMEASUREGROUP,
-                                                                        'condition': 'equals'},
-                                                                       {'value': pytest.RECDATE,
-                                                                        'type': 'calendar',
-                                                                        'condition': 'equals'}]})
-    vdatacollection.transfer_data(pytest.MEASUREGROUPNAME, ddate(2020, 4, 1), pytest.DIMMEASUREGROUP, granularity = 'quarter',
+    comfil5 = ComplexFilter()
+    comfil5 += [MeasureIdFilter(pytest.PPASTPER, pytest.DIMMEASUREGROUP),
+                CalendarFilter(pytest.RECDATE)]
+    recent_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, comfil5)
+    vdatacollection.transfer_data(pytest.MEASUREGROUPNAME, date(2020, 4, 1),
+                                  pytest.DIMMEASUREGROUP, granularity='quarter',
                                   from_data=pytest.PPASTPERSTR, to_data=pytest.PCURPERSTR)
-    current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME,
-                                                                    {'operation': 'and', 'filters': [
-                                                                        {'value': pytest.PCURPER,
-                                                                         'type': 'MeasureId',
-                                                                         'name': pytest.DIMMEASUREGROUP,
-                                                                         'condition': 'equals'},
-                                                                        {'value': pytest.CURDATE,
-                                                                         'type': 'calendar',
-                                                                         'condition': 'equals'}]})
+
+    comfil6 = ComplexFilter()
+    comfil6 += [MeasureIdFilter(pytest.PCURPER, pytest.DIMMEASUREGROUP),
+                CalendarFilter(pytest.CURDATE)]
+    current_period = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME, comfil6)
     count = 0
     recent_period['elements'].sort(key=lambda x: x['dimensionElements'][1]['elementId'])
     current_period['elements'].sort(key=lambda x: x['dimensionElements'][1]['elementId'])
@@ -101,9 +69,7 @@ def test_transfer_data(vdatacollection):
 
 
 def test_get_measuregroup_elements(vdatacollection):
-    data = vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME)
-    #assert type(data) is dict
-    #assert data
+    vdatacollection.get_measuregroup_elements(pytest.MEASUREGROUPNAME)
     with pytest.raises(HTTPError):
         vdatacollection.get_measuregroup_elements('fieghuheig')
 
@@ -119,65 +85,59 @@ def test_post_dimension_by_uniquename(vdatacollection):
 def test_get_measures_from_folder(vdatacollection):
     result_1 = vdatacollection.get_measures_from_folder(pytest.DIMMEASUREGROUP)
     result_2 = vdatacollection.get_measures_from_folder(pytest.DIMMEASUREGROUPSTR, 'Активы')
-    test_data_1 = [{'id': 1, 'name': 'Начало периода'},
-                   {'id': 2, 'name': 'Изменение'},
-                   {'id': 3, 'name': 'Конец периода'}]
-    test_data_2 = {'Оборотные активы': [{'id': 3, 'name': 'Денежные средства'},
-                                        {'id': 4, 'name': 'Дебиторская задолженность'},
-                                        {'id': 5, 'name': 'Товары на складах'},
-                                        {'id': 6, 'name': 'Всего оборотных активов'}],
-                   'Внеоборотные активы': [{'id': 7, 'name': 'Основные средства'},
-                                         {'id': 8, 'name': 'Всего внеоборотных активов'}]}
+    test_data_1 = [{'id': 1, 'name': 'Начало периода', 'attr_Tochnost_znakov_posle_': None,
+                    'attr_Funktsiya_agregatsii': {'linkedElementName': None, 'value': None},
+                    'attr_Edinitsa_izmereniya': {'linkedElementName': None, 'value': None},
+                    'attr_Kod_pokazatelya': None},
+                   {'id': 2, 'name': 'Изменение', 'attr_Tochnost_znakov_posle_': None,
+                    'attr_Funktsiya_agregatsii': {'linkedElementName': None, 'value': None},
+                    'attr_Edinitsa_izmereniya': {'linkedElementName': None, 'value': None},
+                    'attr_Kod_pokazatelya': None},
+                   {'id': 3, 'name': 'Конец периода', 'attr_Tochnost_znakov_posle_': None,
+                    'attr_Funktsiya_agregatsii': {'linkedElementName': None, 'value': None},
+                    'attr_Edinitsa_izmereniya': {'linkedElementName': None, 'value': None},
+                    'attr_Kod_pokazatelya': None}]
+    test_data_2 = {'Активы': {'Оборотные активы': [],
+                              'Внеоборотные активы': []},
+                   'Обязательства': {'Краткосрочные обязательства': [],
+                                     'Долгосрочные обязательства': []},
+                   'Капитал и резервы': []}
+
     assert result_1 == test_data_1
     assert result_2 == test_data_2
-    with pytest.raises(IndexError):
+    with pytest.raises(AttributeError):
         vdatacollection.get_measures_from_folder('geuohgoeg')
 
-def test_get_measure_data_by_date(vdatacollection):
-    data_for_test_1 = vdatacollection.get_measure_data_by_date(pytest.MEASUREGROUPNAME, ddate(2020, 7, 1), dim=pytest.DIMMEASUREGROUPSTR, granularity = 'quarter', from_data = 2)
-    data_for_test_2 = vdatacollection.get_measure_data_by_date(pytest.MEASUREGROUPNAME, ddate(2020, 10, 1), dim=pytest.DIMMEASUREGROUPSTR, granularity = 'half year', from_data = 2)
-    data_for_test_3 = vdatacollection.get_measure_data_by_date(pytest.MEASUREGROUPNAME, ddate(2020, 7, 1), dim=pytest.DIMMEASUREGROUPSTR, granularity = 'half year', from_data = 2)
-    data_for_test_4 = vdatacollection.get_measure_data_by_date(pytest.MEASUREGROUPNAME, ddate(2020, 4, 1), dim=pytest.DIMMEASUREGROUPSTR, granularity='quarter',from_data=2)
-    assert data_for_test_1 == data_for_test_2
-    assert data_for_test_3 == data_for_test_4
-    assert data_for_test_1 != data_for_test_3
+
+def test_get_n_elements(vdatacollection):
+    test_filters = ComplexFilter()
+    test_filters += [AttributeFilter('Иванов', 'Фамилия'), CalendarFilter(date(2020, 1, 1)),
+                     MeasureIdFilter(4, 'dim_Plan_prodazh'), IdFilter(5981, condition='greater')]
+    test_data ={'elements': [{'dimensionElements': [{'dimensionId': 'dim_Filiali', 'elementId': 1},
+                                                    {'dimensionId': 'dim_Produkti', 'elementId': 7},
+                                                    {'dimensionId': 'dim_Versii', 'elementId': 1},
+                                                    {'dimensionId': 'dim_Mediastore_Menedzhery',
+                                                     'elementId': 1}],
+                              'measureElements': [{'measureId': 'dim_Plan_prodazh', 'elementId': 4}],
+                              'calendar': {'dateWithGranularity': '1 квартал',
+                                           'date': '2020-01-01T00:00:00Z',
+                                           'granularity': 'Квартал'}, 'attributes': [], 'id': 6017,
+                              'value': 74.0, 'comment': None, 'systemInfo': None}],
+                'measureGroup': {'name': 'Mediastore. План продаж',
+                                 'id': 'measureGroup_Plan_prodazh',
+                                 'dimensions': [{'name': 'Mediastore. Филиалы',
+                                                 'id': 'dim_Filiali'},
+                                                {'name': 'Mediastore. Продукты',
+                                                 'id': 'dim_Produkti'},
+                                                {'name': 'Mediastore. Версии', 'id': 'dim_Versii'},
+                                                {'name': 'Mediastore. Менеджеры',
+                                                 'id': 'dim_Mediastore_Menedzhery'}],
+                                 'measure': {'name': 'Mediastore. Плановые показатели продаж',
+                                             'id': 'dim_Plan_prodazh'},
+                                 'calendar': {'name': 'Календарь', 'id': 'cal_Kvartal'},
+                                 'attributes': []}}
+    req = vdatacollection.get_n_elements('measureGroup_Plan_prodazh', filters=test_filters)
+    assert test_data == req
     with pytest.raises(AttributeError):
-        vdatacollection.get_measure_data_by_date(pytest.MEASUREGROUPNAME, ddate(2020, 7, 1), dim=pytest.DIMMEASUREGROUPSTR, granularity = 'quarter')
-
-
-def test_find_attribute_by_unique_name(vdatacollection):
-    prediction = {'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': None}
-    answer = vdatacollection.find_attribute_by_unique_name(vdatacollection.get_dimension_elements(pytest.DIMUTILS)['elements'][0], pytest.DIMUTILS_ATTR)
-    assert prediction == answer
-    with pytest.raises(AttributeError):
-        vdatacollection.find_attribute_by_unique_name(vdatacollection.get_dimension_elements(pytest.DIMUTILS)['elements'][0], 1673)
-
-
-def test_find_dimension_element_by_attribute(vdatacollection):
-    prediction = {'id': 1, 'name': 'Количество', 'path': [], 'attributes': [{'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': None}, {'linkedElementName': None, 'attributeId': 'attr_Edinitsa_izmereniya', 'value': None}, {'attributeId': 'attr_Kod_pokazatelya', 'value': None}, {'attributeId': 'attr_Tochnost_znakov_posle_', 'value': 0}]}
-    answer = vdatacollection.find_dimension_element_by_attribute(vdatacollection.get_dimension_elements(pytest.DIMUTILS), "attr_Edinitsa_izmereniya", None)
-    assert prediction == answer
-    with pytest.raises(AttributeError):
-        vdatacollection.find_dimension_element_by_attribute(58362573725, 35763759, 'qwerty')
-
-def test_find_dimension_element_by_name(vdatacollection):
-    prediction = {'id': 2, 'name': 'Цена', 'path': [], 'attributes': [{'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': None}, {'linkedElementName': None, 'attributeId': 'attr_Edinitsa_izmereniya', 'value': None}, {'attributeId': 'attr_Kod_pokazatelya', 'value': None}, {'attributeId': 'attr_Tochnost_znakov_posle_', 'value': 0}]}
-    answer = vdatacollection.find_dimension_element_by_name(vdatacollection.get_dimension_elements(pytest.DIMUTILS), 'Цена')
-    assert prediction == answer
-    with pytest.raises(AttributeError):
-        vdatacollection.find_dimension_element_by_name(38756375, 'Цена')
-
-def test_find_dimension_element_by_id(vdatacollection):
-    prediction = {'id': 2, 'name': 'Цена', 'path': [], 'attributes': [{'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': None}, {'linkedElementName': None, 'attributeId': 'attr_Edinitsa_izmereniya', 'value': None}, {'attributeId': 'attr_Kod_pokazatelya', 'value': None}, {'attributeId': 'attr_Tochnost_znakov_posle_', 'value': 0}]}
-    answer = vdatacollection.find_dimension_element_by_id(vdatacollection.get_dimension_elements(pytest.DIMUTILS), 2)
-    assert prediction == answer
-    with pytest.raises(AttributeError):
-        vdatacollection.find_dimension_element_by_id(vdatacollection.get_dimension_elements(pytest.DIMUTILS), 'qwerty')
-
-def test_prepare_dimension_element_to_insert(vdatacollection):
-    prediction = {'id': 1, 'name': 'Количество', 'path': [], 'attributes': [{'linkedElementName': None, 'attributeId': 'attr_Funktsiya_agregatsii', 'value': 4}, {'linkedElementName': None, 'attributeId': 'attr_Edinitsa_izmereniya', 'value': None}, {'attributeId': 'attr_Kod_pokazatelya', 'value': 5}, {'attributeId': 'attr_Tochnost_znakov_posle_', 'value': 0}]}
-    answer = vdatacollection.prepare_dimension_element_to_insert(vdatacollection.get_dimension_elements(pytest.DIMUTILS)['elements'][0], {"attr_Funktsiya_agregatsii": 4, "attr_Kod_pokazatelya": 5})
-    assert prediction == answer
-    with pytest.raises(AttributeError):
-        vdatacollection.prepare_dimension_element_to_insert(1452684, [1, 2, 3, 4])
- 
+        vdatacollection.get_measuregroup_elements('measureGroup_Plan_prodazh',
+                                                  filters={1: 'тест что кидает ошибку на фильтр'})

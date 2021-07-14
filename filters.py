@@ -191,6 +191,9 @@ class ComplexFilter:
         else:
             self.json['filters'].extend(complex_filter()['filters'])
 
+    def clear(self):
+        self.json['filters'] = []
+
 
 '''
 # Пример использование комплексного фильтра

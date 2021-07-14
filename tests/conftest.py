@@ -1,5 +1,6 @@
 import pytest
 import os, sys
+from datetime import date
 
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,8 +15,8 @@ PASSWORD = 'cwndQd9Bk7JVdnW'
 MEASUREGROUPNAME = 'measureGroup_Byudzhet_po_balan'
 DIMMEASUREGROUP = 'dim_Pokazateli_byudzheta_po_ba'
 DIMMEASUREGROUPSTR = 'dim_Stati_byudzheta_po_balanso'
-CURDATE = '2020-04-01'
-RECDATE = '2020-01-01'
+CURDATE = date(2020, 4, 1)
+RECDATE = date(2020, 1, 1)
 PCURPER = 1
 PPASTPER = 3
 STRCOUNT = 3

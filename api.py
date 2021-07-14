@@ -470,7 +470,7 @@ class DataCollection:
             raise AttributeError('Атрибут filters не является экземпляром наследника'
                                  ' класса SimpleFilter или экземпляром класса ComplexFilter')
 
-        if not filters()['elements']:
+        if not filters()['filters']:
             filters = None
 
         result = self.post_measuregroup_elements_search(group_id, filters=filters)

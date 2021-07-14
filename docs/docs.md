@@ -145,4 +145,3 @@ dc.auth_by_token(token_type, access_token)  # by token
     * в функцию `dc.find_dimension_element_by_name` некорректно переданы данные
     * в функцию `dc.find_dimension_element_by_id` некорректно переданы данные
     * в функцию `dc.prepare_dimension_element_to_insert` некорректно переданы данные
-    
